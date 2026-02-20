@@ -10,6 +10,13 @@ const startCronJobs = require('./cron/jobs');
 const app = express();
 const server = http.createServer(app);
 
+// Middleware Configuration
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'http://localhost:3000'
+].filter(Boolean);
+
 // Socket.io setup
 const io = new Server(server, {
     cors: {
@@ -22,12 +29,6 @@ const io = new Server(server, {
 app.set('io', io);
 
 // Middleware
-const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    'http://localhost:5173',
-    'http://localhost:3000'
-].filter(Boolean);
-
 app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl)
