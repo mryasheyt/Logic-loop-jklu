@@ -1,202 +1,222 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { getJournalEntries, createJournalEntry, updateJournalEntry, deleteJournalEntry } from '../api/journal.api'
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    ArrowLeft, Plus, Search, BookOpen, Save,
+    Trash2, Clock, Calendar as CalendarIcon,
+    Sparkles, AlignLeft, Hash, Edit3, MoreVertical
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useDarkMode } from '../hooks/useDarkMode';
 
-export default function Journal() {
-    const [entries, setEntries] = useState([])
-    const [selectedId, setSelectedId] = useState(null)
-    const [isNew, setIsNew] = useState(false)
-    const [content, setContent] = useState('')
-    const [saving, setSaving] = useState(false)
-    const [loading, setLoading] = useState(true)
-    const [confirmDelete, setConfirmDelete] = useState(false)
+const Journal = () => {
+    const navigate = useNavigate();
+    const [isDark] = useDarkMode();
+    const [entries, setEntries] = useState([
+        { id: 1, date: 'Feb 20, 2026', title: 'A quiet morning', content: 'Woke up early and had some tea. Feeling peaceful for the first time in weeks...', mood: 'Calm', color: 'bg-primary' },
+        { id: 2, date: 'Feb 18, 2026', title: 'Exam stress', content: 'The pressure is mounting. I need to remember to breathe and take small steps.', mood: 'Stressed', color: 'bg-danger' },
+        { id: 3, date: 'Feb 15, 2026', title: 'Small wins', content: 'Finished the project on time! Celebrating small victories today.', mood: 'Productive', color: 'bg-success' },
+    ]);
+    const [activeID, setActiveID] = useState(1);
+    const [search, setSearch] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
-    useEffect(() => {
-        loadEntries()
-    }, [])
+    const activeEntry = entries.find(e => e.id === activeID) || entries[0];
 
-    const loadEntries = async () => {
-        try {
-            const { data } = await getJournalEntries()
-            setEntries(data.entries || data || [])
-        } catch { /* handled */ }
-        setLoading(false)
-    }
+    const handleNewEntry = () => {
+        const newEntry = {
+            id: Date.now(),
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            title: '',
+            content: '',
+            mood: 'Neutral',
+            color: 'bg-primary'
+        };
+        setEntries([newEntry, ...entries]);
+        setActiveID(newEntry.id);
+    };
 
-    const selected = entries.find(e => e._id === selectedId)
-
-    const handleNew = () => {
-        setIsNew(true)
-        setSelectedId(null)
-        setContent('')
-    }
-
-    const handleSelect = (entry) => {
-        setIsNew(false)
-        setSelectedId(entry._id)
-        setContent(entry.content || '')
-    }
-
-    const handleSave = async () => {
-        if (!content.trim()) return
-        setSaving(true)
-        try {
-            if (isNew) {
-                await createJournalEntry({ content })
-                setIsNew(false)
-            } else if (selectedId) {
-                await updateJournalEntry(selectedId, { content })
-            }
-            await loadEntries()
-        } catch { /* handled */ }
-        setSaving(false)
-    }
-
-    const handleDelete = async () => {
-        if (!selectedId) return
-        try {
-            await deleteJournalEntry(selectedId)
-            setSelectedId(null)
-            setContent('')
-            setConfirmDelete(false)
-            await loadEntries()
-        } catch { /* handled */ }
-    }
-
-    const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0
+    const handleSave = () => {
+        setIsSaving(true);
+        setTimeout(() => setIsSaving(false), 2000);
+    };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="max-w-6xl mx-auto px-4 py-6"
-        >
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-text-dark">Journal 📓</h1>
-                    <p className="text-text-gray text-sm mt-0.5">Your private space to reflect</p>
-                </div>
-                <button
-                    onClick={handleNew}
-                    className="px-5 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary-dark transition shadow-lg shadow-primary/25"
-                >
-                    + New Entry
-                </button>
-            </div>
+        <div className="flex h-screen bg-transparent transition-colors duration-500 overflow-hidden selection:bg-primary/20">
+            {/* Sidebar */}
+            <aside className="w-[380px] bg-white dark:bg-card border-r border-gray-100 dark:border-white/5 flex flex-col hidden lg:flex relative z-20">
+                <div className="p-8 space-y-8">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => navigate('/dashboard')} className="p-2.5 hover:bg-gray-100 dark:hover:bg-white/5 rounded-2xl transition-all active:scale-95 group">
+                                <ArrowLeft className="w-5 h-5 text-text-secondary group-hover:text-primary transition-colors" />
+                            </button>
+                            <h1 className="text-2xl font-black text-text-primary dark:text-white tracking-tighter">Journal</h1>
+                        </div>
+                        <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-white/5 rounded-2xl transition-all">
+                            <MoreVertical className="w-5 h-5 text-text-secondary" />
+                        </button>
+                    </div>
 
-            <div className="flex gap-6 h-[calc(100vh-220px)]">
-                {/* Left Panel — Entry List */}
-                <div className="w-full lg:w-[35%] bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-gray-50 overflow-y-auto">
-                    {loading ? (
-                        <div className="flex items-center justify-center h-full">
-                            <div className="animate-spin w-8 h-8 border-3 border-primary border-t-transparent rounded-full" />
-                        </div>
-                    ) : entries.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-                            <span className="text-5xl mb-3">📝</span>
-                            <p className="text-text-gray text-sm">Your journal is private. Start writing.</p>
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-gray-50">
-                            {entries.map(entry => (
-                                <button
-                                    key={entry._id}
-                                    onClick={() => handleSelect(entry)}
-                                    className={`w-full text-left p-4 hover:bg-gray-50 transition ${selectedId === entry._id ? 'bg-primary-light border-l-4 border-primary' : ''
-                                        }`}
-                                >
-                                    <p className="text-xs text-text-gray mb-1">
-                                        {new Date(entry.createdAt || entry.date).toLocaleDateString('en-US', {
-                                            weekday: 'short', month: 'short', day: 'numeric'
-                                        })}
-                                    </p>
-                                    <p className="text-sm text-text-dark line-clamp-2">
-                                        {(entry.content || '').slice(0, 100)}...
-                                    </p>
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                    <button
+                        onClick={handleNewEntry}
+                        className="w-full py-5 bg-text-primary dark:bg-white dark:text-black text-white font-black rounded-[32px] shadow-2xl shadow-black/10 hover:shadow-primary/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 group active:scale-[0.98] uppercase tracking-widest text-xs"
+                    >
+                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                        New Reflection
+                    </button>
+
+                    <div className="relative group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Find a memory..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full py-4 pl-14 pr-6 bg-background dark:bg-white/5 border-none rounded-[28px] text-sm font-medium focus:ring-4 focus:ring-primary/5 transition-all dark:text-white"
+                        />
+                    </div>
                 </div>
 
-                {/* Right Panel — Editor */}
-                <div className="hidden lg:flex flex-1 flex-col bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-gray-50 overflow-hidden">
-                    {isNew || selectedId ? (
-                        <>
-                            <div className="flex items-center justify-between p-4 border-b border-gray-50">
-                                <p className="text-sm text-text-gray">
-                                    {isNew ? 'New Entry' : new Date(selected?.createdAt || selected?.date).toLocaleDateString('en-US', {
-                                        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
-                                    })}
-                                </p>
-                                <div className="flex items-center gap-2">
-                                    {!isNew && (
-                                        <button
-                                            onClick={() => setConfirmDelete(true)}
-                                            className="px-3 py-1.5 text-xs font-medium text-danger bg-red-50 rounded-lg hover:bg-red-100 transition"
-                                        >
-                                            Delete
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={handleSave}
-                                        disabled={saving || !content.trim()}
-                                        className="px-4 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary-dark transition disabled:opacity-60 flex items-center gap-1"
-                                    >
-                                        {saving && <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>}
-                                        Save
-                                    </button>
+                <div className="flex-1 overflow-y-auto px-4 pb-10 space-y-3 no-scrollbar">
+                    {entries.filter(e => e.title.toLowerCase().includes(search.toLowerCase()) || e.content.toLowerCase().includes(search.toLowerCase())).map((entry) => (
+                        <motion.div
+                            key={entry.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            onClick={() => setActiveID(entry.id)}
+                            className={`p-6 rounded-[32px] cursor-pointer transition-all relative overflow-hidden group ${activeID === entry.id
+                                ? 'bg-primary-light dark:bg-primary/20 ring-2 ring-primary/20 shadow-xl shadow-primary/5'
+                                : 'hover:bg-gray-50 dark:hover:bg-white/2 border-transparent border'
+                                }`}
+                        >
+                            <div className="flex justify-between items-start mb-3">
+                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${activeID === entry.id ? 'text-primary' : 'text-text-secondary dark:text-white/30'}`}>
+                                    {entry.date}
+                                </span>
+                                <div className={`w-2 h-2 rounded-full ${entry.color} shadow-[0_0_10px_rgba(0,0,0,0.1)]`} />
+                            </div>
+                            <h3 className={`font-black text-base mb-2 line-clamp-1 tracking-tight ${activeID === entry.id ? 'text-text-primary dark:text-white' : 'text-text-primary dark:text-white/80'}`}>
+                                {entry.title || 'Untitled Thought'}
+                            </h3>
+                            <p className="text-xs text-text-secondary dark:text-white/40 line-clamp-2 leading-relaxed font-medium">
+                                {entry.content || 'Your story starts here...'}
+                            </p>
+                            {activeID === entry.id && (
+                                <div className="absolute top-0 right-0 p-4 opacity-10">
+                                    <Sparkles className="w-8 h-8 text-primary" />
+                                </div>
+                            )}
+                        </motion.div>
+                    ))}
+                </div>
+            </aside>
+
+            {/* Editor Area */}
+            <main className="flex-1 flex flex-col bg-white dark:bg-[#0F0F1A] overflow-hidden relative shadow-inner">
+                <header className="px-10 py-6 flex items-center justify-between border-b border-gray-50 dark:border-white/5 backdrop-blur-md z-10">
+                    <div className="flex items-center gap-6">
+                        <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-background dark:bg-white/5 rounded-2xl text-text-secondary dark:text-white/40">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">{isSaving ? 'Saving...' : 'Cloud Synced'}</span>
+                        </div>
+                        <div className="flex -space-x-2">
+                            {[1, 2, 3].map(i => <div key={i} className="w-6 h-6 rounded-full bg-primary/10 border-2 border-white dark:border-card scale-90" />)}
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button className="p-3.5 text-text-secondary dark:text-white/30 hover:bg-gray-100 dark:hover:bg-white/10 rounded-2xl transition-all">
+                            <Trash2 className="w-5 h-5" />
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            className="px-8 py-3.5 bg-text-primary dark:bg-white dark:text-black text-white text-xs font-black rounded-2xl shadow-xl shadow-black/10 hover:-translate-y-0.5 transition-all flex items-center gap-3 active:scale-95 uppercase tracking-widest"
+                        >
+                            {isSaving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                            {isSaving ? 'Recording' : 'Finalize'}
+                        </button>
+                    </div>
+                </header>
+
+                <div className="flex-1 overflow-y-auto p-10 md:p-24 selection:bg-primary/20 relative">
+                    <div className="max-w-3xl mx-auto space-y-16">
+                        <motion.div
+                            key={activeID + 'header'}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-8"
+                        >
+                            <div className="flex flex-wrap gap-4 items-center">
+                                <div className="px-4 py-2 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center gap-2">
+                                    <Edit3 className="w-3 h-3 text-primary" />
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">Self Reflection</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-text-secondary dark:text-white/40 text-[10px] font-black uppercase tracking-widest">
+                                    <CalendarIcon className="w-3.5 h-3.5" />
+                                    {activeEntry?.date}
                                 </div>
                             </div>
-                            <textarea
-                                value={content}
-                                onChange={e => setContent(e.target.value)}
-                                placeholder="Write your thoughts here..."
-                                className="flex-1 p-6 text-sm text-text-dark leading-relaxed resize-none focus:outline-none"
+                            <input
+                                type="text"
+                                value={activeEntry?.title}
+                                onChange={(e) => {
+                                    const newEntries = entries.map(ent => ent.id === activeID ? { ...ent, title: e.target.value } : ent);
+                                    setEntries(newEntries);
+                                }}
+                                className="w-full text-6xl md:text-8xl font-black border-none focus:ring-0 text-text-primary dark:text-white bg-transparent p-0 tracking-tighter placeholder:text-gray-100 dark:placeholder:text-white/5 leading-[0.9]"
+                                placeholder="Core Theme"
                             />
-                            <div className="px-6 py-2 border-t border-gray-50 text-xs text-text-gray text-right">
-                                {wordCount} words
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                            <span className="text-5xl mb-3">📓</span>
-                            <p className="text-text-gray text-sm">Select an entry or create a new one</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Delete Confirm Modal */}
-            <AnimatePresence>
-                {confirmDelete && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl"
-                        >
-                            <h3 className="text-lg font-semibold text-text-dark mb-2">Delete Entry?</h3>
-                            <p className="text-sm text-text-gray mb-5">This action cannot be undone.</p>
-                            <div className="flex gap-3">
-                                <button onClick={() => setConfirmDelete(false)} className="flex-1 py-2.5 bg-gray-100 rounded-xl text-sm font-medium hover:bg-gray-200 transition">
-                                    Cancel
-                                </button>
-                                <button onClick={handleDelete} className="flex-1 py-2.5 bg-danger text-white rounded-xl text-sm font-medium hover:bg-red-700 transition">
-                                    Delete
-                                </button>
-                            </div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div>
-    )
-}
+
+                        <motion.div
+                            key={activeID + 'content'}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            <textarea
+                                value={activeEntry?.content}
+                                onChange={(e) => {
+                                    const newEntries = entries.map(ent => ent.id === activeID ? { ...ent, content: e.target.value } : ent);
+                                    setEntries(newEntries);
+                                }}
+                                className="w-full h-[60vh] border-none focus:ring-0 text-xl md:text-2xl leading-relaxed text-text-primary/70 dark:text-white/60 bg-transparent resize-none p-0 placeholder:text-gray-100 dark:placeholder:text-white/5 font-medium scroll-smooth focus:placeholder:opacity-0 transition-opacity"
+                                placeholder="The space for your thoughts is infinite. Begin where it hurts, or where it heals..."
+                            />
+                        </motion.div>
+                    </div>
+                    {/* Background Noise Effect */}
+                    <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] blend-overlay" />
+                </div>
+
+                {/* Status Bar */}
+                <footer className="px-10 py-6 border-t border-gray-50 dark:border-white/5 flex flex-col md:flex-row justify-between items-center bg-white dark:bg-[#0F0F1A] gap-6">
+                    <div className="flex items-center gap-8">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black text-text-secondary dark:text-white/30 uppercase tracking-[0.2em]">Words</p>
+                            <p className="text-xl font-black dark:text-white leading-none">
+                                {activeEntry?.content.split(/\s+/).filter(x => x).length}
+                            </p>
+                        </div>
+                        <div className="w-px h-8 bg-gray-100 dark:bg-white/5" />
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black text-text-secondary dark:text-white/30 uppercase tracking-[0.2em]">Read Time</p>
+                            <p className="text-xl font-black dark:text-white leading-none">
+                                {Math.max(1, Math.ceil(activeEntry?.content.split(/\s+/).length / 200))}m
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        {['Anxious', 'Chill', 'Productive', 'Sad'].map(m => (
+                            <button key={m} className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeEntry?.mood === m ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-background dark:bg-white/5 text-text-secondary dark:text-white/40 hover:bg-gray-100 dark:hover:bg-white/10'}`}>
+                                {m}
+                            </button>
+                        ))}
+                    </div>
+                </footer>
+            </main>
+        </div>
+    );
+};
+
+export default Journal;
+

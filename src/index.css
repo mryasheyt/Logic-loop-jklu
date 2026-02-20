@@ -1,94 +1,93 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
   --color-primary: #6B46C1;
   --color-primary-light: #EDE9FE;
-  --color-primary-dark: #553C9A;
-  --color-teal: #0D9488;
-  --color-teal-light: #CCFBF1;
-  --color-bg: #F9FAFB;
-  --color-text-dark: #1A1A2E;
-  --color-text-gray: #6B7280;
+  --color-secondary: #0D9488;
+  --color-secondary-light: #CCFBF1;
+  --color-background: #F9FAFB;
+  --color-card: #FFFFFF;
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #6B7280;
   --color-danger: #DC2626;
   --color-warning: #D97706;
-  --color-card: #FFFFFF;
-  --font-family-sans: 'Inter', system-ui, sans-serif;
+  --color-success: #16A34A;
+
+  --shadow-custom: 0 4px 24px rgba(107, 70, 193, 0.10);
+
+  --font-inter: "Inter", sans-serif;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Dark mode overrides - Tuned to match Spirit/Space 3D Background */
+.dark {
+  --color-background: #0F0F1A;
+  /* Matched to Spline background */
+  --color-card: #161626;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: rgba(255, 255, 255, 0.5);
 }
 
-body {
-  font-family: var(--font-family-sans);
-  background-color: var(--color-bg);
-  color: var(--color-text-dark);
-  min-height: 100vh;
+:root {
+  font-family: var(--font-inter);
+  line-height: 1.6;
+  font-weight: 400;
+
+
+  color-scheme: light dark;
+  background-color: #0F0F1A;
+  color: white;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
 }
 
-/* Toast animations */
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
-}
-.animate-pulse-ring {
-  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-.animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out forwards;
+/* Base styles for premium look */
+button {
+  transition: transform 0.1s;
 }
 
-/* Mood slider custom styling */
-input[type="range"].mood-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 8px;
-  border-radius: 4px;
-  background: linear-gradient(to right, #DC2626, #D97706, #059669);
-  outline: none;
+button:active {
+  transform: scale(0.97);
 }
-input[type="range"].mood-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #6B46C1;
-  cursor: pointer;
-  border: 3px solid white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
-input[type="range"].mood-slider::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #6B46C1;
-  cursor: pointer;
-  border: 3px solid white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+
+.dark .glass {
+  background: rgba(26, 26, 46, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #EDE9FE 25%, #F5F3FF 50%, #EDE9FE 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+.dark .skeleton {
+  background: linear-gradient(90deg, #1A1A2E 25%, #2D2D44 50%, #1A1A2E 75%);
+  background-size: 200% 100%;
 }

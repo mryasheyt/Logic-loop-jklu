@@ -1,125 +1,191 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { usePeerFeed, useCreatePost, useReactToPost, useFlagPost } from '../hooks/usePeerFeed'
-import PeerPostCard from '../components/PeerPostCard'
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Heart, Users, MessageCircle, Flag, Send, Search, Filter } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const categories = [
-    { key: 'all', label: 'All' },
-    { key: 'loneliness', label: '😔 Loneliness' },
-    { key: 'academic_pressure', label: '📚 Academic Pressure' },
-    { key: 'anxiety', label: '😰 Anxiety' },
-    { key: 'burnout', label: '🔥 Burnout' },
-    { key: 'homesickness', label: '🏠 Homesickness' },
-    { key: 'relationship', label: '💔 Relationship' },
-    { key: 'sleep', label: '😴 Sleep' },
-    { key: 'identity', label: '🪞 Identity' },
-    { key: 'other', label: '💭 Other' },
-]
+const PeerFeed = () => {
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('All');
+    const [postText, setPostText] = useState('');
+    const [posts, setPosts] = useState([
+        {
+            id: 1,
+            category: 'Anxiety',
+            text: "Feeling really overwhelmed with final exams coming up. Does anyone else feel like they're falling behind no matter how much they study?",
+            time: '2h ago',
+            reactions: { felt: 24, strong: 12, alone: 18 },
+            color: 'bg-purple-100 text-purple-700'
+        },
+        {
+            id: 2,
+            category: 'Relationship',
+            text: "Tried talking to my parents about my career choices, but it turned into an argument. It's hard when they don't see my vision.",
+            time: '5h ago',
+            reactions: { felt: 15, strong: 8, alone: 10 },
+            color: 'bg-teal-100 text-teal-700'
+        },
+        {
+            id: 3,
+            category: 'Motivation',
+            text: "Found a great study spot today! Small wins matter. Keep going everyone, you've got this! 🌱",
+            time: '8h ago',
+            reactions: { felt: 42, strong: 30, alone: 5 },
+            color: 'bg-green-100 text-green-700'
+        }
+    ]);
 
-export default function PeerFeed() {
-    const [activeCategory, setActiveCategory] = useState('all')
-    const [content, setContent] = useState('')
-    const [postCategory, setPostCategory] = useState('other')
-    const { data, isLoading } = usePeerFeed(activeCategory)
-    const createPost = useCreatePost()
-    const reactToPost = useReactToPost()
-    const flagPost = useFlagPost()
+    const categories = ['All', 'Anxiety', 'Depression', 'Relationship', 'Academic', 'Motivation'];
 
-    const posts = data?.posts || data || []
-
-    const handlePost = async () => {
-        if (!content.trim() || content.length > 280) return
-        try {
-            await createPost.mutateAsync({ content: content.trim(), category: postCategory })
-            setContent('')
-        } catch { /* handled */ }
-    }
+    const handlePost = () => {
+        if (!postText.trim()) return;
+        const newPost = {
+            id: posts.length + 1,
+            category: 'General',
+            text: postText,
+            time: 'Just now',
+            reactions: { felt: 0, strong: 0, alone: 0 },
+            color: 'bg-gray-100 text-gray-700'
+        };
+        setPosts([newPost, ...posts]);
+        setPostText('');
+    };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="max-w-3xl mx-auto px-4 py-6"
-        >
-            <h1 className="text-2xl font-bold text-text-dark mb-1">You Are Not Alone 🤝</h1>
-            <p className="text-text-gray text-sm mb-6">Share anonymously. No judgments. No usernames.</p>
-
-            {/* Post Composer */}
-            <div className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-gray-50 mb-6">
-                <textarea
-                    value={content}
-                    onChange={e => setContent(e.target.value.slice(0, 280))}
-                    placeholder="How are you feeling? Share anonymously..."
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                />
-                <div className="flex items-center justify-between mt-3">
+        <div className="min-h-screen bg-transparent">
+            {/* Header */}
+            <header className="glass sticky top-0 z-50 px-6 py-6 border-b border-gray-100">
+                <div className="max-w-4xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <select
-                            value={postCategory}
-                            onChange={e => setPostCategory(e.target.value)}
-                            className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-text-gray focus:outline-none focus:ring-2 focus:ring-primary/30"
-                        >
-                            {categories.filter(c => c.key !== 'all').map(c => (
-                                <option key={c.key} value={c.key}>{c.label}</option>
-                            ))}
-                        </select>
-                        <span className={`text-xs font-medium ${content.length > 260 ? 'text-danger' : 'text-text-gray'}`}>
-                            {content.length}/280
-                        </span>
+                        <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                            <Users className="w-6 h-6 text-primary" />
+                        </button>
+                        <h1 className="text-2xl font-bold text-text-primary">Peer Feed</h1>
                     </div>
-                    <button
-                        onClick={handlePost}
-                        disabled={!content.trim() || createPost.isPending}
-                        className="px-5 py-2 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary-dark transition shadow-lg shadow-primary/25 disabled:opacity-60 flex items-center gap-2"
-                    >
-                        {createPost.isPending && (
-                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                        )}
-                        Post Anonymously
-                    </button>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-secondary/10 text-secondary rounded-full">
+                        <Shield className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-widest">100% Anonymous</span>
+                    </div>
                 </div>
-            </div>
+            </header>
 
-            {/* Category Tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide">
-                {categories.map(c => (
-                    <button
-                        key={c.key}
-                        onClick={() => setActiveCategory(c.key)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${activeCategory === c.key
-                                ? 'bg-primary text-white shadow-md'
-                                : 'bg-white text-text-gray border border-gray-200 hover:border-primary hover:text-primary'
-                            }`}
-                    >
-                        {c.label}
-                    </button>
-                ))}
-            </div>
+            <main className="max-w-3xl mx-auto px-6 py-10 space-y-10">
+                {/* Banner */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-br from-primary to-secondary p-8 rounded-[32px] text-white shadow-xl relative overflow-hidden"
+                >
+                    <div className="relative z-10">
+                        <h2 className="text-3xl font-bold mb-2">You Are Not Alone 🤝</h2>
+                        <p className="text-white/80 max-w-sm">
+                            A safe, moderated space to share your thoughts and support fellow students.
+                        </p>
+                    </div>
+                    <div className="absolute top-0 right-0 p-8 opacity-20">
+                        <MessageCircle className="w-24 h-24" />
+                    </div>
+                </motion.div>
 
-            {/* Posts */}
-            {isLoading ? (
-                <div className="text-center py-12">
-                    <div className="animate-spin w-8 h-8 border-3 border-primary border-t-transparent rounded-full mx-auto" />
-                </div>
-            ) : posts.length === 0 ? (
-                <div className="text-center py-16">
-                    <span className="text-5xl block mb-3">🌱</span>
-                    <p className="text-text-gray">No posts in this category yet. You can be the first.</p>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {posts.map(post => (
-                        <PeerPostCard
-                            key={post._id}
-                            post={post}
-                            onReact={(id, type) => reactToPost.mutate({ id, reactionType: type })}
-                            onFlag={(id) => flagPost.mutate(id)}
-                        />
+                {/* Post Composer */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-white p-6 rounded-[32px] shadow-custom"
+                >
+                    <textarea
+                        value={postText}
+                        onChange={(e) => setPostText(e.target.value)}
+                        placeholder="Share what's on your mind. No names. No judgment."
+                        className="w-full bg-background border-none rounded-2xl p-6 mb-4 focus:ring-2 focus:ring-primary/10 resize-none h-32 text-text-primary placeholder:text-text-secondary/50"
+                    />
+                    <div className="flex justify-between items-center">
+                        <div className="flex flex-col">
+                            <div className="flex gap-2">
+                                <span className={`text-[10px] font-bold uppercase tracking-widest ${postText.length > 240 ? 'text-warning' : 'text-text-secondary'}`}>
+                                    {postText.length} / 280
+                                </span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handlePost}
+                            disabled={!postText.trim() || postText.length > 280}
+                            className="px-6 py-3 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 flex items-center gap-2"
+                        >
+                            Post Anonymously
+                            <Send className="w-4 h-4" />
+                        </button>
+                    </div>
+                </motion.div>
+
+                {/* Filters */}
+                <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                    {categories.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => setActiveTab(cat)}
+                            className={`px-6 py-3 rounded-2xl text-sm font-bold whitespace-nowrap transition-all ${activeTab === cat
+                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                : 'bg-white text-text-secondary hover:bg-gray-50'
+                                }`}
+                        >
+                            {cat}
+                        </button>
                     ))}
                 </div>
-            )}
-        </motion.div>
-    )
-}
+
+                {/* Feed */}
+                <div className="space-y-6">
+                    <AnimatePresence>
+                        {posts.map((post, i) => (
+                            <motion.div
+                                key={post.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ delay: i * 0.1 }}
+                                whileHover={{ translateY: -4 }}
+                                className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-50 hover:shadow-lg transition-all"
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest ${post.color}`}>
+                                        {post.category}
+                                    </span>
+                                    <span className="text-xs text-text-secondary font-medium">{post.time}</span>
+                                </div>
+
+                                <p className="text-text-primary text-lg leading-relaxed mb-8">
+                                    {post.text}
+                                </p>
+
+                                <div className="flex justify-between items-center">
+                                    <div className="flex gap-2">
+                                        {[
+                                            { icon: <Heart className="w-4 h-4" />, label: "I feel this", key: 'felt' },
+                                            { icon: <Shield className="w-4 h-4" />, label: "Stay strong", key: 'strong' },
+                                            { icon: <Users className="w-4 h-4" />, label: "You're not alone", key: 'alone' }
+                                        ].map(btn => (
+                                            <motion.button
+                                                key={btn.key}
+                                                whileTap={{ scale: 1.3 }}
+                                                className="px-4 py-2 rounded-xl bg-gray-50 hover:bg-primary-light hover:text-primary transition-all flex items-center gap-2 group"
+                                            >
+                                                <span className="group-hover:animate-bounce">{btn.icon}</span>
+                                                <span className="text-xs font-bold">{post.reactions[btn.key]}</span>
+                                            </motion.button>
+                                        ))}
+                                    </div>
+                                    <button className="p-2 text-text-secondary hover:text-danger opacity-40 hover:opacity-100 transition-all">
+                                        <Flag className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
+            </main>
+        </div>
+    );
+};
+
+export default PeerFeed;

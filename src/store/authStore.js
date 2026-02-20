@@ -1,15 +1,16 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export const useAuthStore = create(
     persist(
         (set) => ({
-            token: null,
             user: null,
-            setAuth: (token, user) => set({ token, user }),
-            updateUser: (userData) => set((state) => ({ user: { ...state.user, ...userData } })),
-            logout: () => set({ token: null, user: null }),
+            token: null,
+            setAuth: (user, token) => set({ user, token }),
+            logout: () => set({ user: null, token: null }),
         }),
-        { name: 'mindmate-auth' }
+        {
+            name: 'mindmate-auth',
+        }
     )
-)
+);

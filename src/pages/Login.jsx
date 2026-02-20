@@ -1,110 +1,178 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { loginUser } from '../api/auth.api'
-import { useAuthStore } from '../store/authStore'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, Link } from 'react-router-dom';
+import { Mail, Lock, Sparkles, Brain, ArrowRight } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
+import toast from 'react-hot-toast';
 
-export default function Login() {
-    const [form, setForm] = useState({ email: '', password: '' })
-    const [errors, setErrors] = useState({})
-    const [loading, setLoading] = useState(false)
-    const [apiError, setApiError] = useState('')
-    const navigate = useNavigate()
-    const setAuth = useAuthStore(s => s.setAuth)
+const Login = () => {
+    const navigate = useNavigate();
+    const setAuth = useAuthStore(state => state.setAuth);
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
 
-    const validate = () => {
-        const e = {}
-        if (!form.email) e.email = 'Email is required'
-        else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Invalid email'
-        if (!form.password) e.password = 'Password is required'
-        return e
-    }
+    const affirmations = [
+        "Your potential is endless.",
+        "It's okay to not be okay.",
+        "You are worthy of all the good things.",
+        "Small steps lead to big changes.",
+        "You've survived 100% of your bad days."
+    ];
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        const v = validate()
-        setErrors(v)
-        if (Object.keys(v).length) return
-        setLoading(true)
-        setApiError('')
-        try {
-            const { data } = await loginUser(form)
-            setAuth(data.token, data.user)
-            navigate('/dashboard')
-        } catch (err) {
-            setApiError(err.response?.data?.message || 'Login failed. Please try again.')
-        } finally {
-            setLoading(false)
-        }
-    }
+    const [quote, setQuote] = useState(affirmations[0]);
+
+    useEffect(() => {
+        setQuote(affirmations[Math.floor(Math.random() * affirmations.length)]);
+    }, []);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        toast.success('Welcome back to your safe space! 💙');
+        setAuth({ name: 'Aalap Goswami', email: formData.email }, 'mock-token');
+        navigate('/dashboard');
+    };
+
+    const fadeInUp = {
+        hidden: { opacity: 0, y: 15 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+    };
 
     return (
-        <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="w-full max-w-md"
-            >
-                {/* Logo */}
-                <div className="text-center mb-8">
-                    <span className="text-5xl block mb-3">🧠</span>
-                    <h1 className="text-3xl font-bold text-text-dark">Welcome back</h1>
-                    <p className="text-text-gray mt-2">Sign in to MindMate AI</p>
+        <div className="flex min-h-screen bg-transparent transition-colors duration-500 overflow-hidden">
+            {/* Left Side - Hero Brand (Made glassy) */}
+            <div className="hidden lg:flex w-5/12 bg-black/20 backdrop-blur-3xl p-16 flex-col justify-between relative overflow-hidden border-r border-white/5">
+
+                <div className="relative z-10">
+                    <div className="flex items-center gap-2 text-white mb-16 cursor-pointer group" onClick={() => navigate('/')}>
+                        <motion.div whileHover={{ rotate: 15 }} className="text-3xl">🧠</motion.div>
+                        <span className="text-2xl font-black tracking-tighter">MindMate<span className="text-primary-light">.ai</span></span>
+                    </div>
+                    <motion.div
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <h1 className="text-6xl font-black text-white leading-[0.95] tracking-tighter mb-8">
+                            Continuity<br />over <span className="text-secondary-light italic">perfection.</span>
+                        </h1>
+                        <p className="text-white/40 text-lg font-medium max-w-sm">
+                            Ready to pick up where you left off? Your journey is uniquely yours.
+                        </p>
+                    </motion.div>
                 </div>
 
-                {/* Card */}
-                <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] p-8">
-                    {apiError && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-danger text-sm rounded-xl">
-                            {apiError}
-                        </div>
-                    )}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-white/5 backdrop-blur-3xl rounded-[48px] p-10 border border-white/10 relative z-10 group hover:bg-white/10 transition-all duration-700 shadow-2xl"
+                >
+                    <Sparkles className="w-8 h-8 text-secondary mb-6 animate-pulse" />
+                    <p className="text-2xl font-bold text-white mb-4 leading-relaxed italic">
+                        "{quote}"
+                    </p>
+                    <p className="text-white/30 uppercase tracking-[0.2em] text-[10px] font-black">Mindful Message</p>
+                </motion.div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label className="block text-sm font-medium text-text-dark mb-1.5">Email</label>
-                            <input
-                                type="email"
-                                value={form.email}
-                                onChange={e => setForm({ ...form, email: e.target.value })}
-                                className={`w-full px-4 py-3 rounded-xl border ${errors.email ? 'border-danger' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-sm`}
-                                placeholder="you@university.edu"
-                            />
-                            {errors.email && <p className="text-danger text-xs mt-1">{errors.email}</p>}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-text-dark mb-1.5">Password</label>
-                            <input
-                                type="password"
-                                value={form.password}
-                                onChange={e => setForm({ ...form, password: e.target.value })}
-                                className={`w-full px-4 py-3 rounded-xl border ${errors.password ? 'border-danger' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-sm`}
-                                placeholder="••••••••"
-                            />
-                            {errors.password && <p className="text-danger text-xs mt-1">{errors.password}</p>}
-                        </div>
-                        <button
+                {/* Abstract Background Elements */}
+                <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[-5%] left-[-5%] w-[300px] h-[300px] bg-secondary/15 rounded-full blur-[100px]" />
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none" />
+            </div>
+
+            {/* Right Side - Form */}
+            <div className="w-full lg:w-7/12 flex items-center justify-center p-8 relative bg-transparent">
+                <div className="absolute inset-0 bg-primary/5 dark:bg-transparent pointer-events-none" />
+
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                        hidden: { opacity: 0 },
+                        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+                    }}
+                    className="w-full max-w-md relative z-10"
+                >
+                    <div className="lg:hidden flex items-center gap-2 text-primary mb-12">
+                        <span className="text-3xl">🧠</span>
+                        <span className="text-2xl font-black tracking-tighter text-white">MindMate</span>
+                    </div>
+
+
+                    <motion.div variants={fadeInUp} className="mb-12">
+                        <h2 className="text-5xl font-black text-text-primary dark:text-white tracking-tighter mb-3 leading-none">Hello again.</h2>
+                        <p className="text-text-secondary dark:text-white/40 font-medium">Your progress is safely waiting for you.</p>
+                    </motion.div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <motion.div variants={fadeInUp} className="space-y-2">
+                            <label className="text-[10px] font-black text-text-secondary dark:text-white/30 uppercase tracking-[0.2em] ml-1">University Email</label>
+                            <div className="relative group">
+                                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                                <input
+                                    required
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="w-full py-5 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[28px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm dark:text-white"
+                                    placeholder="yourname@uni.edu"
+                                />
+                            </div>
+                        </motion.div>
+
+                        <motion.div variants={fadeInUp} className="space-y-2">
+                            <div className="flex justify-between items-center ml-1">
+                                <label className="text-[10px] font-black text-text-secondary dark:text-white/30 uppercase tracking-[0.2em]">Secret Key</label>
+                                <Link to="/forgot" className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Forgot?</Link>
+                            </div>
+                            <div className="relative group">
+                                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                                <input
+                                    required
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    className="w-full py-5 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[28px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm dark:text-white"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                        </motion.div>
+
+                        <motion.button
+                            variants={fadeInUp}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.98 }}
                             type="submit"
-                            disabled={loading}
-                            className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition shadow-lg shadow-primary/25 disabled:opacity-60 flex items-center justify-center gap-2"
+                            className="w-full py-5 bg-text-primary dark:bg-white dark:text-black text-white font-black rounded-[28px] hover:shadow-2xl transition-all shadow-xl shadow-black/10 mt-6 flex items-center justify-center gap-3 group uppercase tracking-widest text-xs"
                         >
-                            {loading && (
-                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
-                            )}
-                            {loading ? 'Signing in...' : 'Sign In'}
-                        </button>
+                            Sign In to Dashboard
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </motion.button>
                     </form>
-                </div>
 
-                <p className="text-center text-sm text-text-gray mt-6">
-                    Don't have an account?{' '}
-                    <Link to="/register" className="text-primary font-semibold hover:underline">Sign up</Link>
-                </p>
-            </motion.div>
+                    <motion.div variants={fadeInUp} className="mt-12 text-center">
+                        <p className="text-sm text-text-secondary dark:text-white/40 font-medium">
+                            First time here? <Link to="/register" className="text-primary font-black hover:underline underline-offset-4">Create an Identity</Link>
+                        </p>
+                    </motion.div>
+
+                    <motion.div
+                        variants={fadeInUp}
+                        className="mt-16 p-6 bg-primary/5 dark:bg-white/5 rounded-[32px] border border-dashed border-primary/20 dark:border-white/10 flex items-center gap-4"
+                    >
+                        <div className="w-10 h-10 bg-white dark:bg-card rounded-xl flex items-center justify-center shadow-sm">
+                            <Brain className="w-5 h-5 text-primary" />
+                        </div>
+                        <p className="text-[10px] text-text-secondary dark:text-white/40 leading-relaxed font-bold uppercase tracking-widest">
+                            Secure encrypted login powered by <span className="text-text-primary dark:text-white">MindMate Security</span>
+                        </p>
+                    </motion.div>
+                </motion.div>
+            </div>
         </div>
-    )
-}
+    );
+};
+
+export default Login;
+

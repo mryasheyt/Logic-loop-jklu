@@ -1,172 +1,179 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { useBurnoutScore, useBurnoutTrend, useBurnoutCheckin } from '../hooks/useBurnout'
-import BurnoutGauge from '../components/BurnoutGauge'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, CheckCircle2, Moon, Sun, BatteryLow, Coffee, Zap, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import BurnoutGauge from '../components/BurnoutGauge';
 
-function StarRating({ value, onChange, label }) {
-    return (
-        <div className="mb-5">
-            <p className="text-sm font-medium text-text-dark mb-2">{label}</p>
-            <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map(star => (
-                    <button
-                        key={star}
-                        type="button"
-                        onClick={() => onChange(star)}
-                        className={`text-2xl transition-transform hover:scale-110 ${star <= value ? 'grayscale-0' : 'grayscale opacity-30'}`}
-                    >
-                        ⭐
-                    </button>
-                ))}
-            </div>
-        </div>
-    )
-}
+const Burnout = () => {
+    const navigate = useNavigate();
+    const [step, setStep] = useState(1);
+    const [showResult, setShowResult] = useState(false);
+    const [answers, setAnswers] = useState({ rest: 0, motivation: 0, breaks: null });
 
-export default function Burnout() {
-    const { data: scoreData, isLoading: scoreLoading } = useBurnoutScore()
-    const { data: trendData } = useBurnoutTrend()
-    const checkin = useBurnoutCheckin()
+    const questions = [
+        {
+            id: 1,
+            label: 'How rested do you feel today?',
+            icon: <Moon className="w-12 h-12 text-primary" />,
+            type: 'rating',
+            key: 'rest'
+        },
+        {
+            id: 2,
+            label: 'Your motivation level at this moment?',
+            icon: <Zap className="w-12 h-12 text-secondary" />,
+            type: 'rating',
+            key: 'motivation'
+        },
+        {
+            id: 3,
+            label: 'Have you taken a break today?',
+            icon: <Coffee className="w-12 h-12 text-primary" />,
+            type: 'boolean',
+            key: 'breaks'
+        }
+    ];
 
-    const [restedScore, setRestedScore] = useState(3)
-    const [motivationScore, setMotivationScore] = useState(3)
-    const [tookBreaks, setTookBreaks] = useState(false)
-    const [submitted, setSubmitted] = useState(false)
+    const handleNext = () => {
+        if (step < questions.length) setStep(step + 1);
+        else setShowResult(true);
+    };
 
-    const checkedInToday = scoreData?.checkedInToday || submitted
-    const score = scoreData?.score ?? 0
-    const riskLevel = scoreData?.riskLevel || 'low'
-
-    const handleSubmit = async () => {
-        try {
-            await checkin.mutateAsync({ restedScore, motivationScore, tookBreaks })
-            setSubmitted(true)
-        } catch { /* handled */ }
-    }
-
-    const trendChartData = (trendData?.trend || trendData || []).map(t => ({
-        day: new Date(t.date || t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        score: t.computedBurnout || t.score,
-    }))
-
-    const tips = [
-        { icon: '🛌', text: 'Sleep before midnight tonight' },
-        { icon: '🚶', text: 'Take a 10-minute walk' },
-        { icon: '📵', text: '30 minutes phone-free before bed' },
-    ]
+    const currentQ = questions[step - 1];
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="max-w-4xl mx-auto px-4 py-6"
-        >
-            <h1 className="text-2xl font-bold text-text-dark mb-1">Burnout Tracker 🔥</h1>
-            <p className="text-text-gray text-sm mb-6">Monitor your energy and prevent burnout</p>
-
-            {!checkedInToday ? (
-                /* Check-in Form */
+        <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 lg:p-12 relative overflow-hidden">
+            {/* Background decoration */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gray-100">
                 <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-gray-50 max-w-lg mx-auto"
-                >
-                    <h2 className="text-lg font-semibold text-text-dark mb-5">Daily Check-in</h2>
-                    <StarRating value={restedScore} onChange={setRestedScore} label="How rested do you feel?" />
-                    <StarRating value={motivationScore} onChange={setMotivationScore} label="How motivated are you today?" />
+                    className="h-full bg-primary"
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${(step / questions.length) * 100}%` }}
+                />
+            </div>
 
-                    <div className="mb-6">
-                        <p className="text-sm font-medium text-text-dark mb-2">Did you take breaks or move your body?</p>
-                        <div className="flex gap-3">
+            <header className="absolute top-6 left-6 lg:top-12 lg:left-12 flex items-center gap-4">
+                <button onClick={() => navigate('/dashboard')} className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all">
+                    <ArrowLeft className="w-6 h-6 text-text-secondary" />
+                </button>
+            </header>
+
+            {!showResult ? (
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={step}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="w-full max-w-xl text-center space-y-12"
+                    >
+                        <div className="space-y-4">
+                            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm mb-8">
+                                {currentQ.icon}
+                            </div>
+                            <h2 className="text-4xl font-bold text-text-primary leading-tight">{currentQ.label}</h2>
+                            <p className="text-text-secondary font-medium uppercase tracking-widest text-sm">Step {step} of 3</p>
+                        </div>
+
+                        {currentQ.type === 'rating' ? (
+                            <div className="flex justify-center gap-4">
+                                {[1, 2, 3, 4, 5].map(num => (
+                                    <button
+                                        key={num}
+                                        onClick={() => setAnswers({ ...answers, [currentQ.key]: num })}
+                                        className={`w-16 h-16 rounded-2xl text-xl font-bold transition-all border-2 ${answers[currentQ.key] === num
+                                            ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20'
+                                            : 'bg-white border-gray-100 text-text-secondary hover:border-primary/30'
+                                            }`}
+                                    >
+                                        {num}
+                                    </button>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex justify-center gap-6">
+                                {[
+                                    { label: 'Yes', val: true },
+                                    { label: 'No', val: false }
+                                ].map(opt => (
+                                    <button
+                                        key={opt.label}
+                                        onClick={() => setAnswers({ ...answers, breaks: opt.val })}
+                                        className={`px-12 py-6 rounded-3xl text-xl font-bold transition-all border-2 ${answers.breaks === opt.val
+                                            ? 'bg-primary border-primary text-white scale-105 shadow-lg shadow-primary/20'
+                                            : 'bg-white border-gray-100 text-text-secondary hover:border-primary/30'
+                                            }`}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="pt-10">
                             <button
-                                type="button"
-                                onClick={() => setTookBreaks(true)}
-                                className={`px-6 py-2.5 rounded-xl font-medium text-sm transition ${tookBreaks ? 'bg-green-500 text-white shadow-md' : 'bg-gray-100 text-text-gray hover:bg-gray-200'
-                                    }`}
+                                onClick={handleNext}
+                                disabled={currentQ.type === 'rating' ? answers[currentQ.key] === 0 : answers.breaks === null}
+                                className="px-12 py-5 bg-text-primary text-white font-bold rounded-2xl hover:bg-black transition-all shadow-xl disabled:opacity-20"
                             >
-                                ✅ Yes
+                                Continue
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => setTookBreaks(false)}
-                                className={`px-6 py-2.5 rounded-xl font-medium text-sm transition ${!tookBreaks ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-text-gray hover:bg-gray-200'
-                                    }`}
-                            >
-                                ❌ No
-                            </button>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+            ) : (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full max-w-4xl grid md:grid-cols-2 gap-12 items-center"
+                >
+                    <div className="bg-white p-12 rounded-[48px] shadow-custom flex flex-col items-center">
+                        <h3 className="text-2xl font-bold text-text-primary mb-10 text-center">Your Recovery Status</h3>
+                        <BurnoutGauge score={68} />
+                        <div className="mt-12 text-center">
+                            <span className={`px-6 py-2 rounded-full font-bold text-sm uppercase tracking-widest ${68 > 70 ? 'bg-danger-light text-danger' : 'bg-warning-light text-warning'}`}>
+                                Moderate Risk
+                            </span>
+                            <p className="mt-6 text-text-secondary leading-relaxed">
+                                You're pushing yourself hard lately. It might be time to schedule some intentional downtime.
+                            </p>
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleSubmit}
-                        disabled={checkin.isPending}
-                        className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition shadow-lg shadow-primary/25 disabled:opacity-60 flex items-center justify-center gap-2"
-                    >
-                        {checkin.isPending && (
-                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                        )}
-                        Submit Check-in
-                    </button>
-                </motion.div>
-            ) : (
-                /* Results */
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Gauge */}
-                    <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-gray-50 flex flex-col items-center">
-                        <h2 className="text-lg font-semibold text-text-dark mb-4">Your Burnout Score</h2>
-                        {scoreLoading ? (
-                            <div className="animate-spin w-8 h-8 border-3 border-primary border-t-transparent rounded-full" />
-                        ) : (
-                            <BurnoutGauge score={score} size={240} />
-                        )}
-                    </div>
-
-                    {/* Trend */}
-                    <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-gray-50">
-                        <h2 className="text-lg font-semibold text-text-dark mb-4">30-Day Trend</h2>
-                        {trendChartData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={200}>
-                                <LineChart data={trendChartData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                                    <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                    <Line type="monotone" dataKey="score" stroke="#D97706" strokeWidth={2.5} dot={{ r: 3 }} />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="h-[200px] flex items-center justify-center text-text-gray text-sm">
-                                Check in daily to see your trend
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Recovery Mode */}
-                    {score > 70 && (
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            className="lg:col-span-2 bg-gradient-to-r from-red-50 to-amber-50 border border-red-200 rounded-2xl p-6"
+                    <div className="space-y-6">
+                        <h3 className="text-3xl font-bold text-text-primary mb-8 px-4">Recovery Tips for Today</h3>
+                        {[
+                            { icon: <Moon className="w-5 h-5" />, title: 'Early Lights Out', desc: 'Try to get 8 hours of sleep tonight to reset.' },
+                            { icon: <Sun className="w-5 h-5" />, title: 'Nature Walk', desc: 'A quick 15-minute walk without your phone.' },
+                            { icon: <Info className="w-5 h-5" />, title: 'Digital Detox', desc: 'Put away all screens 1 hour before bed.' }
+                        ].map((tip, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className="bg-white p-6 rounded-3xl border border-gray-50 flex gap-6 items-center hover:shadow-md transition-all shadow-sm"
+                            >
+                                <div className="w-12 h-12 bg-primary-light text-primary rounded-2xl flex items-center justify-center flex-shrink-0">
+                                    {tip.icon}
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-text-primary">{tip.title}</h4>
+                                    <p className="text-sm text-text-secondary">{tip.desc}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="w-full py-5 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all mt-6"
                         >
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="text-2xl">🚨</span>
-                                <h2 className="text-lg font-semibold text-text-dark">Recovery Mode Activated</h2>
-                            </div>
-                            <p className="text-sm text-text-gray mb-4">Your burnout score is high. Here are 3 things to prioritize today:</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                {tips.map((tip, i) => (
-                                    <div key={i} className="bg-white rounded-xl p-4 text-center shadow-sm">
-                                        <span className="text-3xl block mb-2">{tip.icon}</span>
-                                        <p className="text-sm font-medium text-text-dark">{tip.text}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    )}
-                </div>
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </motion.div>
             )}
-        </motion.div>
-    )
-}
+        </div>
+    );
+};
+
+export default Burnout;

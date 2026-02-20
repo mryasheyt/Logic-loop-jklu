@@ -1,54 +1,68 @@
-export default function BurnoutGauge({ score = 0, size = 200 }) {
+import { motion } from 'framer-motion';
+
+const BurnoutGauge = ({ score = 0 }) => {
+    const radius = 80;
+    const stroke = 12;
+    const normalizedRadius = radius - stroke * 2;
+    const circumference = normalizedRadius * 2 * Math.PI;
+    const semiCircumference = circumference / 2;
+
+    // score is 0-100. We want to map 0-100 to 0-semiCircumference
+    const strokeDashoffset = semiCircumference - (score / 100) * semiCircumference;
+
     const getColor = (s) => {
-        if (s <= 40) return '#059669'
-        if (s <= 70) return '#D97706'
-        return '#DC2626'
-    }
-
-    const getLabel = (s) => {
-        if (s <= 40) return "You're doing well"
-        if (s <= 70) return 'Watch your energy'
-        return 'Recovery mode activated'
-    }
-
-    const color = getColor(score)
-    const radius = 80
-    const strokeWidth = 14
-    const cx = 100
-    const cy = 100
-    const circumference = Math.PI * radius
-    const progress = (score / 100) * circumference
+        if (s < 40) return '#16A34A'; // Success / Green
+        if (s < 70) return '#D97706'; // Warning / Amber
+        return '#DC2626'; // Danger / Red
+    };
 
     return (
-        <div className="flex flex-col items-center">
-            <svg width={size} height={size * 0.6} viewBox="0 0 200 120">
-                {/* Background arc */}
+        <div className="relative flex flex-col items-center">
+            <svg
+                height={radius * 1.5}
+                width={radius * 2}
+                className="transform rotate-0"
+            >
+                {/* Background track */}
                 <path
-                    d="M 20 100 A 80 80 0 0 1 180 100"
-                    fill="none"
+                    d={`M ${stroke},${radius} A ${normalizedRadius},${normalizedRadius} 0 0 1 ${radius * 2 - stroke},${radius}`}
+                    fill="transparent"
                     stroke="#E5E7EB"
-                    strokeWidth={strokeWidth}
+                    strokeWidth={stroke}
                     strokeLinecap="round"
                 />
-                {/* Progress arc */}
-                <path
-                    d="M 20 100 A 80 80 0 0 1 180 100"
-                    fill="none"
-                    stroke={color}
-                    strokeWidth={strokeWidth}
+                {/* Progress fill */}
+                <motion.path
+                    d={`M ${stroke},${radius} A ${normalizedRadius},${normalizedRadius} 0 0 1 ${radius * 2 - stroke},${radius}`}
+                    fill="transparent"
+                    stroke={getColor(score)}
+                    strokeWidth={stroke}
                     strokeLinecap="round"
-                    strokeDasharray={`${progress} ${circumference}`}
-                    style={{ transition: 'stroke-dasharray 0.8s ease-out, stroke 0.3s ease' }}
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: score / 100 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    style={{ strokeDasharray: semiCircumference }}
                 />
-                {/* Score text */}
-                <text x={cx} y="85" textAnchor="middle" fontSize="32" fontWeight="700" fill={color}>
-                    {score}
-                </text>
-                <text x={cx} y="105" textAnchor="middle" fontSize="10" fill="#6B7280">
-                    / 100
-                </text>
             </svg>
-            <p className="text-sm font-semibold mt-1" style={{ color }}>{getLabel(score)}</p>
+            <div className="absolute top-[35%] flex flex-col items-center">
+                <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-4xl font-bold text-text-primary"
+                >
+                    {score}
+                </motion.span>
+                <span className="text-xs text-text-secondary uppercase tracking-wider font-semibold">Burnout Risk</span>
+            </div>
+            {score > 70 && (
+                <motion.div
+                    animate={{ scale: [1, 1.05, 1], opacity: [0.5, 0.8, 0.5] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="absolute inset-0 bg-danger/10 rounded-full blur-2xl -z-10"
+                />
+            )}
         </div>
-    )
-}
+    );
+};
+
+export default BurnoutGauge;
