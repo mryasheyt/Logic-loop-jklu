@@ -18,6 +18,8 @@ import Profile from './pages/Profile';
 import Breathing from './pages/Breathing';
 import SplineBackground from './components/SplineBackground';
 
+import { useDarkMode } from './hooks/useDarkMode';
+
 const queryClient = new QueryClient();
 
 
@@ -28,6 +30,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  useDarkMode();
   return (
     <QueryClientProvider client={queryClient}>
       <SplineBackground />

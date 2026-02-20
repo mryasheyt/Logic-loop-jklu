@@ -101,8 +101,8 @@ const Login = () => {
 
 
                     <motion.div variants={fadeInUp} className="mb-12">
-                        <h2 className="text-5xl font-black text-text-primary dark:text-white tracking-tighter mb-3 leading-none">Hello again.</h2>
-                        <p className="text-text-secondary dark:text-white/40 font-medium">Your progress is safely waiting for you.</p>
+                        <h2 className="text-5xl font-black text-text-primary tracking-tighter mb-3 leading-none">Hello again.</h2>
+                        <p className="text-text-secondary font-medium">Your progress is safely waiting for you.</p>
                     </motion.div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -115,7 +115,7 @@ const Login = () => {
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full py-5 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[28px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm text-text-primary dark:text-white"
+                                    className="w-full py-5 pl-14 pr-6 bg-card border border-gray-100 dark:border-white/5 rounded-[28px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm text-text-primary"
                                     placeholder="yourname@uni.edu"
                                 />
                             </div>
@@ -133,7 +133,7 @@ const Login = () => {
                                     type="password"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    className="w-full py-5 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[28px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm text-text-primary dark:text-white"
+                                    className="w-full py-5 pl-14 pr-6 bg-card border border-gray-100 dark:border-white/5 rounded-[28px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm text-text-primary"
                                     placeholder="••••••••"
                                 />
                             </div>

@@ -140,7 +140,7 @@ const Chat = () => {
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
                             placeholder="Pour your thoughts here..."
-                            className="w-full bg-background dark:bg-white/5 border-none rounded-[32px] p-6 pr-16 focus:ring-4 focus:ring-primary/5 resize-none max-h-40 text-base font-medium text-text-primary dark:text-white transition-all shadow-inner"
+                            className="w-full bg-background border-none rounded-[32px] p-6 pr-16 focus:ring-4 focus:ring-primary/5 resize-none max-h-40 text-base font-medium text-text-primary transition-all shadow-inner"
                             rows="1"
                             style={{ height: 'auto', minHeight: '64px' }}
                             onInput={(e) => {
