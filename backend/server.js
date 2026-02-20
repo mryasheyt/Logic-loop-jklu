@@ -31,13 +31,18 @@ app.set('io', io);
 // Middleware
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl)
+        // Allow requests with no origin (like mobile apps)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+
+        const isRender = origin.endsWith('.onrender.com');
+        const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+        const isAllowed = allowedOrigins.indexOf(origin) !== -1;
+
+        if (isRender || isLocal || isAllowed || process.env.NODE_ENV !== 'production') {
             callback(null, true);
         } else {
-            console.warn(`[CORS] Request from blocked origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
+            console.warn(`[CORS] Blocked origin: ${origin}`);
+            callback(null, false); // Deny but don't crash
         }
     },
     credentials: true,
