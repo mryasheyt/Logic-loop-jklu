@@ -109,7 +109,7 @@ const Register = () => {
                                         type="text"
                                         value={formData.fullName}
                                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                        className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm dark:text-white"
+                                        className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm text-text-primary dark:text-white"
                                         placeholder="Anonymous Owl"
                                     />
                                 </div>
@@ -124,7 +124,7 @@ const Register = () => {
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm dark:text-white"
+                                        className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm text-text-primary dark:text-white"
                                         placeholder="you@uni.edu"
                                     />
                                 </div>
@@ -141,7 +141,7 @@ const Register = () => {
                                         type="text"
                                         value={formData.university}
                                         onChange={(e) => setFormData({ ...formData, university: e.target.value })}
-                                        className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm dark:text-white"
+                                        className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm text-text-primary dark:text-white"
                                         placeholder="IIT, DU, BITS..."
                                     />
                                 </div>
@@ -154,7 +154,7 @@ const Register = () => {
                                     <select
                                         value={formData.yearOfStudy}
                                         onChange={(e) => setFormData({ ...formData, yearOfStudy: e.target.value })}
-                                        className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm dark:text-white appearance-none relative"
+                                        className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm text-text-primary dark:text-white appearance-none relative"
                                     >
                                         <option value="1">Freshman (1st Yr)</option>
                                         <option value="2">Sophomore (2nd Yr)</option>
@@ -175,7 +175,7 @@ const Register = () => {
                                     type="password"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm dark:text-white"
+                                    className="w-full py-4 pl-14 pr-6 bg-white dark:bg-card border border-gray-100 dark:border-white/5 rounded-[24px] focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium shadow-sm text-text-primary dark:text-white"
                                     placeholder="••••••••"
                                 />
                             </div>

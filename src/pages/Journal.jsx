@@ -72,7 +72,7 @@ const Journal = () => {
                             placeholder="Find a memory..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full py-4 pl-14 pr-6 bg-background dark:bg-white/5 border-none rounded-[28px] text-sm font-medium focus:ring-4 focus:ring-primary/5 transition-all dark:text-white"
+                            className="w-full py-4 pl-14 pr-6 bg-background dark:bg-white/5 border-none rounded-[28px] text-sm font-medium focus:ring-4 focus:ring-primary/5 transition-all text-text-primary dark:text-white"
                         />
                     </div>
                 </div>
