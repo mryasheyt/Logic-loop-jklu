@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft, Plus, Search, BookOpen, Save,
     Trash2, Clock, Calendar as CalendarIcon,
-    Sparkles, AlignLeft, Hash, Edit3, MoreVertical
+    Sparkles, AlignLeft, Hash, Edit3
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../hooks/useDarkMode';
@@ -52,9 +52,6 @@ const Journal = () => {
                             </button>
                             <h1 className="text-2xl font-black text-text-primary dark:text-white tracking-tighter">Journal</h1>
                         </div>
-                        <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-white/5 rounded-2xl transition-all">
-                            <MoreVertical className="w-5 h-5 text-text-secondary" />
-                        </button>
                     </div>
 
                     <button

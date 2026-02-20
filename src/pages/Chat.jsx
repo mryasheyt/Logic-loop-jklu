@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Send, ArrowLeft, MoreVertical, Shield, Heart,
+    Send, ArrowLeft, Shield, Heart,
     Info, X, Sparkles, AlertCircle, Bot, User, Lock, ExternalLink
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -83,9 +83,6 @@ const Chat = () => {
                         <Lock className="w-3.5 h-3.5 text-primary" />
                         <span className="text-[10px] text-primary font-black uppercase tracking-widest">Protocol Zero Active</span>
                     </div>
-                    <button className="p-3 text-text-secondary dark:text-white/30 hover:bg-gray-100 dark:hover:bg-white/5 rounded-2xl transition-all">
-                        <MoreVertical className="w-5 h-5" />
-                    </button>
                 </div>
             </header>
 
